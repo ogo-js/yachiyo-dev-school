@@ -11,6 +11,14 @@ export default defineConfig({
 		starlight({
 			title: 'Yachiyo Dev School',
 			customCss: ['./src/styles/custom.css'],
+			// 各ページの下に「ページを編集」を出す（GitHub の編集の画面へ）
+			editLink: {
+				baseUrl: 'https://github.com/ogo-js/yachiyo-dev-school/edit/main/',
+			},
+			// 「ページを編集」の横に「このページについて報告する」を足す
+			components: {
+				EditLink: './src/components/EditLink.astro',
+			},
 			locales: {
 				root: { label: '日本語', lang: 'ja' },
 			},

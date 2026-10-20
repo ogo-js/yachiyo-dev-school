@@ -1,0 +1,39 @@
+---
+// 「このページを編集」の横に「このページについて報告する」を並べる
+import Default from '@astrojs/starlight/components/EditLink.astro';
+import { Icon } from '@astrojs/starlight/components';
+
+const { entry } = Astro.locals.starlightRoute;
+const pageUrl = new URL(Astro.url.pathname, Astro.site).href;
+const params = new URLSearchParams({
+	template: 'report.yml',
+	title: `[報告] ${entry.data.title}`,
+	page: `${entry.data.title}（${pageUrl}）`,
+});
+const issueUrl = `https://github.com/ogo-js/yachiyo-dev-school/issues/new?${params}`;
+---
+
+<div class="page-actions print:hidden">
+	<Default />
+	<a href={issueUrl} class="sl-flex report-link">
+		<Icon name="comment-alt" size="1.2em" />
+		このページについて報告する
+	</a>
+</div>
+
+<style>
+	.page-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem 1.5rem;
+	}
+	.report-link {
+		gap: 0.5rem;
+		align-items: center;
+		text-decoration: none;
+		color: var(--sl-color-gray-3);
+	}
+	.report-link:hover {
+		color: var(--sl-color-white);
+	}
+</style>

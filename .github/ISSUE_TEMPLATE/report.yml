@@ -1,0 +1,37 @@
+name: 教材の誤りを報告する
+description: 誤字や、書いてあるとおりに動かない所を知らせる
+title: "[報告] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        報告ありがとうございます。直し方が分かっているときは、ページの下の「ページを編集」からプルリクエストを出すこともできます。
+  - type: input
+    id: page
+    attributes:
+      label: どのページか
+      description: ページの下の「このページについて報告する」から開くと、自動で入ります。
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: どこが、どう違うか
+      description: 見出しや手順の番号など、場所が分かるように書いてください。
+    validations:
+      required: true
+  - type: textarea
+    id: detail
+    attributes:
+      label: 打ったコマンドと、出たエラー
+      description: 動かないときに書いてください。出た文をそのまま貼ってください。パスワードなどの秘密の情報は消してください。
+      render: text
+    validations:
+      required: false
+  - type: input
+    id: environment
+    attributes:
+      label: 使っている環境
+      description: 分かる範囲で書いてください（例：Windows 11、WSL2 の Ubuntu 24.04）。
+    validations:
+      required: false
