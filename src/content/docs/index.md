@@ -112,6 +112,19 @@ description: 開発の道具の使い方から、画面とAPIとデータベー�
 | 10‑1 | [小さな業務アプリを作る](10-final/business-app/) | 一覧・登録の画面と API とデータベースをつなぎ、Docker でまとめて動かせる |
 | 10‑2 | [プルリクエストで出す](10-final/pull-request/) | 更新の機能をブランチで足し、プルリクエストで出して、見直してから合流させられる |
 
+## 付録 Claude Code
+
+本編を終えた人向けの付録です。Claude Code を使うには有料のプランが必要です。
+
+| No | レッスン | できるようになること |
+| --- | --- | --- |
+| A‑1 | [Claude Code と話す](appendix-claude/basics/) | セッション・トークン・コンテキストの考え方が分かり、話の流れを整理できる |
+| A‑2 | [指示を置いておく](appendix-claude/instructions/) | CLAUDE.md と rule に、毎回伝えたいことを書いておける |
+| A‑3 | [道具を足す](appendix-claude/skills/) | skill を作って、決まった手順を名前で呼べる |
+| A‑4 | [作業を分ける](appendix-claude/parallel/) | 作業を引き継ぎ、サブエージェントにその場で任せ、セッションどうしで役割を分けられる |
+| A‑5 | [安全に使う](appendix-claude/safety/) | 許可の仕組みと AI の癖を知り、出てきた変更を確かめられる |
+| A‑6 | [使い方を振り返る](appendix-claude/insights/) | `/insights` で使い方を振り返り、CLAUDE.md や skill の改善につなげられる |
+
 ## レッスンの型
 
 どのレッスンも次の順に書きます。
