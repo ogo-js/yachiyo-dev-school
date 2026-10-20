@@ -1,0 +1,9 @@
+/* 前へ・次へのリンクを、本文に合った大きさにする */
+.pagination-links a {
+	padding: 0.75rem 1rem;
+}
+
+.pagination-links .link-title {
+	font-size: var(--sl-text-base);
+	font-weight: 600;
+}
