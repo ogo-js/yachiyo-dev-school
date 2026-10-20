@@ -124,6 +124,7 @@ description: 開発の道具の使い方から、画面とAPIとデータベー�
 | A‑4 | [作業を分ける](appendix-claude/parallel/) | 作業を引き継ぎ、サブエージェントにその場で任せ、セッションどうしで役割を分けられる |
 | A‑5 | [安全に使う](appendix-claude/safety/) | 許可の仕組みと AI の癖を知り、出てきた変更を確かめられる |
 | A‑6 | [使い方を振り返る](appendix-claude/insights/) | `/insights` で使い方を振り返り、CLAUDE.md や skill の改善につなげられる |
+| A‑7 | [使いこなしのヒント](appendix-claude/tips/) | プルリクエストのレビュー、公式の説明の読ませ方など、慣れてきたら試したい頼み方 |
 
 ## レッスンの型
 
