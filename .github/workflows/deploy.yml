@@ -1,0 +1,53 @@
+# main に push したら、サイトを組み立てて GitHub Pages に公開する
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # Actions の画面から手で動かすこともできる
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 公開が重なったときは、先に始まった方を最後まで終わらせる
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: リポジトリを取ってくる
+        uses: actions/checkout@v5
+
+      - name: Node.js を用意する
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: 必要なものを入れる
+        run: npm ci
+
+      - name: サイトを組み立てる
+        run: npm run build
+
+      - name: 組み立てたサイトを公開用に渡す
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: GitHub Pages に公開する
+        id: deployment
+        uses: actions/deploy-pages@v4

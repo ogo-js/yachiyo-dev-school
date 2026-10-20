@@ -4,6 +4,9 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
+	// GitHub Pages で公開する場所（https://ogo-js.github.io/yachiyo-dev-school/）
+	site: 'https://ogo-js.github.io',
+	base: '/yachiyo-dev-school',
 	integrations: [
 		starlight({
 			title: 'Yachiyo Dev School',

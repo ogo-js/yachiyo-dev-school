@@ -2,6 +2,8 @@
 
 Git や Docker のコマンドを打ったことがない人が、今の Web 開発の道具と技術を一から身につけるための教材です。
 
+公開しているサイト：https://ogo-js.github.io/yachiyo-dev-school/
+
 最後に、次の構成の小さな業務アプリを自分で作れるようになることを目指します。
 
 - 画面：TypeScript、React、React Router
@@ -9,24 +11,29 @@ Git や Docker のコマンドを打ったことがない人が、今の Web 開
 - データベース：PostgreSQL
 - 動かす環境：Docker
 
-## サイトとして読む
+## 手元でサイトとして読む
 
-教材は Astro Starlight のサイトとして読めます。Node.js が入っている環境で、次のように打ちます。
+Node.js が入っている環境で、次のように打ちます。
 
 ```bash
 npm install
 npm run dev
 ```
 
-ブラウザで `http://localhost:4321` を開くと、目次が表示されます。
+ブラウザで `http://localhost:4321/yachiyo-dev-school/` を開くと、目次が表示されます。
+
+## 公開のしかた
+
+`main` に push すると、GitHub Actions（`.github/workflows/deploy.yml`）がサイトを組み立てて、GitHub Pages に公開します。
 
 ## フォルダの構成
 
 ```text
 .
 ├── README.md
-├── astro.config.mjs        … サイトの設定（タイトル、左のメニュー）
+├── astro.config.mjs        … サイトの設定（タイトル、公開する場所、左のメニュー）
 ├── package.json
+├── .github/workflows/      … GitHub Pages に公開する設定
 ├── files/                  … レッスンで使う練習用のファイル
 │   ├── webdemo.py          … 第3部の練習用のサーバー
 │   └── sample.sql          … 第5部の練習用のデータ
