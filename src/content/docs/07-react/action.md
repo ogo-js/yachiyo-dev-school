@@ -117,7 +117,7 @@ export default function EmployeeNew() {
 5. `redirect("/employees")` で、一覧のページへ移す
 6. 一覧のページの `loader` が動き、田中さんを含む一覧が表示される
 
-`Form` は、React Router が用意したフォームです。HTML の `<form>` と同じように書けますが、ページ全体を読み込み直さずに送れます。
+`Form` は React Router が用意したフォームで、7-4の検索でも使いました。HTML の `<form>` と同じように書けますが、ページ全体を読み込み直さずに送れます。
 
 ## 入力の誤りを知らせる
 

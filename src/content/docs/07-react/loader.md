@@ -7,11 +7,11 @@ sidebar:
 
 ## このページでできるようになること
 
-- `loader` を書いて、ページを表示する前にデータを取れる
+- `loader` を書いて、ページを表示する前にデータを取れる。URL に載せた検索の条件で絞れる
 - `loader` がサーバーで動き、コンポーネントがブラウザでも動くことを確かめられる
 - データが見つからないときに、404を返せる
 
-かかる時間の目安は45分です。
+かかる時間の目安は60分です。
 
 ## 始める前に
 
@@ -159,11 +159,65 @@ export default function Employee({ loaderData }: Route.ComponentProps) {
 
 `/employees/99` を開くと、404のページが出ます。開発者ツールのネットワークのタブでも、ステータスコードが `404` になっていることを確かめてください（レッスン3-1）。
 
+## 検索の条件を URL に載せる
+
+今の一覧の検索は7-2と同じく `useState` で作っています。入れた文字はブラウザの中にしかなく、URL は `/employees` のままです。検索した後の URL を人に送っても、相手の画面には全員が並びます。また、`loader` が全員分のデータを画面に渡し、画面の中で絞っています。社員が何千人もいると、使わないデータまで送ることになります。
+
+レッスン3-2で、検索の条件のように URL を他の人に送れば同じ画面を見せられるものは `GET` で送る、と学びました。検索の条件を URL の `?` の後ろ（クエリ文字列）に載せて送り、`loader` で受け取って絞る形に直します。
+
+`app/routes/employees.tsx` を、次のように書き換えて保存します。
+
+```tsx
+import { Form, Link } from "react-router";
+import type { Route } from "./+types/employees";
+import { getEmployees } from "../data/employees.server";
+import { EmployeeCard } from "../components/EmployeeCard";
+
+export async function loader({ request }: Route.LoaderArgs) {
+  const url = new URL(request.url);
+  const q = url.searchParams.get("q") ?? "";
+  const employees = await getEmployees();
+  return { employees: employees.filter((employee) => employee.name.includes(q)), q };
+}
+
+export default function Employees({ loaderData }: Route.ComponentProps) {
+  const { employees, q } = loaderData;
+
+  return (
+    <main>
+      <h1>社員一覧</h1>
+      <Form method="get">
+        <input key={q} name="q" defaultValue={q} placeholder="名前で絞る" />
+        <button type="submit">探す</button>
+      </Form>
+      {employees.map((employee) => (
+        <div key={employee.id}>
+          <EmployeeCard name={employee.name} department={employee.department} />
+          <Link to={`/employees/${employee.id}`}>詳しく見る</Link>
+        </div>
+      ))}
+    </main>
+  );
+}
+```
+
+- `<Form method="get">`：React Router が用意したフォーム。HTML の `<form>` と同じように書ける。`method="get"` にすると、入れた値をクエリ文字列に載せた URL（`/employees?q=佐`）に移る。リンクで移るときと同じく、ページ全体は読み込み直さず、`loader` の結果だけを取り直す
+- `loader({ request })`：`request` はブラウザから届いたリクエスト（レッスン3-1）。`request.url` には `?` の後ろまで含めた URL が入っている
+- `url.searchParams.get("q")`：クエリ文字列から `q` の値を取り出す。`q` は入力欄の `name="q"` の `q` と同じ
+- `?? ""`：左の値がない（`null`）ときは、右の値を使う。`/employees` のように `?q=` が付いていないときは、空の文字で絞るので全員になる
+- `defaultValue={q}`：入力欄に最初から入れておく値。検索した後のページでも、入れた文字が欄に残る
+- `key={q}`：7-1では一覧の中で見分けるために使った `key` を、ここでは入力欄に付けている。`defaultValue` は入力欄を最初に作ったときにしか使われない。`key` の値が変わると、React はその部品を作り直すので、ブラウザの「戻る」で前の URL に戻ったときも、欄の文字が URL の `q` とそろう
+
+`useState` と、動いたことを確かめる `console.log` は使わなくなったので、消しています。
+
+入力欄に「佐」と入れて「探す」を押します。アドレス欄が `/employees?q=佐` に変わり、佐藤さんだけが表示されます。この URL を新しいタブで開いても、同じく佐藤さんだけが表示されます。条件が URL に載っているからです。
+
 ## 困ったとき
 
-- **「loaderData is undefined」のように出た**：`loader` を `export` し忘れています。`export async function loader()` と書いてください。
+- **「loaderData is undefined」のように出た**：`loader` を `export` し忘れています。`async function loader` の前に `export` を付けてください。
 - **`loaderData.employees` に赤い波線が出る**：`import type { Route } from "./+types/employees";` のファイル名がページのファイル名と合っているか確かめてください。
 - **`loader` の `console.log` がブラウザに出ない**：正しい動きです。`loader` の `console.log` はターミナルに出ます。
+- **「探す」を押しても、URL に `?q=` が付かない**：入力欄に `name="q"` が付いているか確かめてください。フォームは `name` の付いた入力欄の値だけを送ります。
 
 ## 確かめよう
 

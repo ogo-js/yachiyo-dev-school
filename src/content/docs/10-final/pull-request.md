@@ -7,11 +7,11 @@ sidebar:
 
 ## このページでできるようになること
 
-- アプリ全体を1つのリポジトリにして、GitHub に置ける
+- パスワードを記録から外して、アプリ全体を1つのリポジトリにし、GitHub に置ける
 - 機能を足す作業を、ブランチ・テスト・プルリクエストの流れで進められる
 - 何を変えたか、どう確かめたかを、プルリクエストに書ける
 
-かかる時間の目安は2〜3時間です。
+かかる時間の目安は2時間半〜3時間半です。
 
 ## 始める前に
 
@@ -35,6 +35,106 @@ sidebar:
 
 手順は要点とヒントだけを書いています。分からないときは、書いてある部のレッスンに戻って確かめてください。
 
+## 手で動かす準備
+
+このレッスンでは API と画面を手で動かして確かめながら進めます。レッスン10-1の「確かめよう」を終えたままだと、Docker の API が5080番のポートを使っています。そのため、API を手で動かそうとすると「address already in use」と出て動きません。Docker で動いている3つをいったん止めて、データベースだけを動かしておきます。
+
+```bash
+cd ~/practice/business-app
+docker compose down
+docker compose up -d db
+```
+
+データはボリュームに残っているので、10-1で登録した社員も消えません。
+
+## パスワードを記録から外す
+
+この後、`business-app` 全体を Git のリポジトリにして、GitHub に送ります。今のままだと、データベースのパスワード（`secret`）が書かれた `compose.yaml` と `api1/appsettings.json` も一緒に送られます。レッスン4-2と8-3で「本物のアプリではパスワードを Git に入れない」と書きました。ここでその方法を使います。
+
+### Docker には .env で渡す
+
+`business-app` に `.env` というファイルを作ります。
+
+```bash
+cd ~/practice/business-app
+touch .env
+code .env
+```
+
+次の1行を書いて保存します。
+
+```text
+DB_PASSWORD=secret
+```
+
+`compose.yaml` で `secret` と書いてある2か所を、`${DB_PASSWORD}` に書き換えて保存します。
+
+```yaml
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+```
+
+```yaml
+  api:
+    build: ./api1
+    environment:
+      ConnectionStrings__Default: "Host=db;Port=5432;Database=practice;Username=app;Password=${DB_PASSWORD}"
+```
+
+`docker compose` は `compose.yaml` と同じフォルダにある `.env` を自動で読みます。そして `${DB_PASSWORD}` の所に `.env` に書いた値を入れて動かします。`.env` を Git の記録から外せば、パスワードは GitHub に送られません。
+
+`.env` が読めているかを確かめます。
+
+```bash
+docker compose up -d db
+```
+
+`Running` と出れば、`.env` が読めています。データベースの設定は前と同じなので、動いているコンテナがそのまま使われます。「The "DB_PASSWORD" variable is not set」と出たときは、`.env` の場所か中身が違います（このレッスンの「困ったとき」）。
+
+### 手で動かす API にはユーザーシークレットで渡す
+
+`dotnet run` で手で動かす API は、`appsettings.json` の接続文字列を読んでいます。こちらは .NET の「ユーザーシークレット」で渡します。値をプロジェクトのフォルダの外（`~/.microsoft/usersecrets`）にしまっておき、開発中に動かすときだけ読み込む仕組みです。
+
+```bash
+cd ~/practice/business-app/api1
+dotnet user-secrets init
+dotnet user-secrets set "ConnectionStrings:Default" "Host=localhost;Port=5432;Database=practice;Username=app;Password=secret"
+```
+
+- `dotnet user-secrets init`：この API でユーザーシークレットを使う準備をする。`api1.csproj` に、しまう場所の目印（`UserSecretsId`）が書き足される
+- `dotnet user-secrets set "名前" "値"`：値をしまう。`ConnectionStrings:Default` の `:` は `appsettings.json` の階層の区切りを表す（`compose.yaml` の `__` と同じ意味）
+
+しまったら、`appsettings.json` から8-3で足した `ConnectionStrings` の3行を消して保存します。
+
+```json
+  "ConnectionStrings": {
+    "Default": "Host=localhost;Port=5432;Database=practice;Username=app;Password=secret"
+  },
+```
+
+API を動かして、データベースにつながることを確かめます。
+
+```bash
+dotnet run --urls http://localhost:5080
+```
+
+2つ目のターミナルで呼びます。
+
+```bash
+curl http://localhost:5080/api/employees/1
+```
+
+佐藤さんが返れば、ユーザーシークレットから接続文字列を読めています。確かめたら、Ctrl+C で API を止めます。
+
+:::note
+ユーザーシークレットは `dotnet run` で開発中に動かすときだけ読まれます。Docker で動かす API は、これまでどおり `compose.yaml` の `ConnectionStrings__Default` で受け取ります。しまった値は暗号化されないので、ユーザーシークレットは開発のときだけに使う仕組みです。
+:::
+
+`.env` とユーザーシークレットは GitHub に送られません。このリポジトリをクローンした人は、自分で `.env` を作り、`dotnet user-secrets set` を打つ必要があります。チームで使うときは、README に「`.env` に `DB_PASSWORD` を書く」のように、要る名前と手順だけを書いておきます。
+
 ## リポジトリにする
 
 `business-app` 全体を、1つのリポジトリにします。
@@ -47,18 +147,25 @@ build/
 .react-router/
 bin/
 obj/
+.env
 ```
 
-`.gitignore` に書いた名前のファイルやフォルダは、Git の記録の対象から外れます。`node_modules` や `bin` は `npm install` や `dotnet build` で作り直せるので、記録しません。
+`.gitignore` に書いた名前のファイルやフォルダは、Git の記録の対象から外れます。`node_modules` や `bin` は `npm install` や `dotnet build` で作り直せるので、記録しません。`.env` はさっきパスワードを書いたファイルです。
 
 ```bash
 cd ~/practice/business-app
 git init
 git add .
+git status
+```
+
+`git status` の「Changes to be committed」に `.env` が並んでいないことを確かめてから、コミットします。
+
+```bash
 git commit -m "画面・API・データベースをつないだ業務アプリ"
 ```
 
-GitHub に `business-app` という名前で、README を作らない空のリポジトリを作ります。作った後の画面に、手元のリポジトリを GitHub につなぐコマンドが表示されるので、「…or push an existing repository from the command line」の欄のコマンドを打ちます。
+GitHub に `business-app` という名前で、README を作らない空のリポジトリを作ります。公開範囲はレッスン2-4と同じく「Private」を選びます。作った後の画面に、手元のリポジトリを GitHub につなぐコマンドが表示されるので、「…or push an existing repository from the command line」の欄のコマンドを打ちます。
 
 ```bash
 git remote add origin git@github.com:yachiyo/business-app.git
@@ -78,18 +185,6 @@ git push -u origin main
 | 画面 | `/employees/:id/edit` のページ。今の値が入った状態のフォームを出し、送ると更新して、詳しく見るページに戻る |
 
 `PUT` は、レッスン3-2の「今は知らなくてよいこと」で出てきたメソッドの1つで、「この内容で置き換えて」というお願いです。
-
-## 手で動かす準備
-
-作っているあいだは、API と画面を手で動かして確かめます。レッスン10-1の「確かめよう」を終えたままだと、Docker の API が5080番のポートを使っています。そのため、API を手で動かそうとすると「address already in use」と出て動きません。Docker で動いている3つをいったん止めて、データベースだけを動かしておきます。
-
-```bash
-cd ~/practice/business-app
-docker compose down
-docker compose up -d db
-```
-
-データはボリュームに残っているので、10-1で登録した社員も消えません。
 
 ## 1. ブランチを作る
 
@@ -223,7 +318,7 @@ GitHub でプルリクエストを出します（レッスン2-5）。説明の�
 次のことを確かめてください。
 
 - 確かめるために足した `console.log` が残っていない
-- パスワードなどの、人に見せてはいけない情報が入っていない
+- パスワードなどの、人に見せてはいけない情報が入っていない。パスワードは `.env` とユーザーシークレットに置き、コードや設定のファイルには書かない
 - 使わなくなったコードやファイルが残っていない
 - 今回の機能と関係のない変更が混ざっていない
 
@@ -247,14 +342,22 @@ git branch -d edit-employee
 docker compose up -d --build
 ```
 
+## 困ったとき
+
+- **`docker compose` で「The "DB_PASSWORD" variable is not set」と出た**：`.env` が `compose.yaml` と同じフォルダにないか、中の名前が違います。`business-app/.env` に `DB_PASSWORD=secret` と書いてあるか確かめてください。
+- **`dotnet run` で「System.ArgumentNullException: Value cannot be null. (Parameter 'Host')」と出た**：接続文字列が読めていません。`api1` のフォルダで `dotnet user-secrets list` を打ち、`ConnectionStrings:Default` が出るか確かめてください。出なければ、`dotnet user-secrets set` をもう一度打ちます。
+- **`dotnet run` で「address already in use」と出た**：Docker の API が5080番のポートを使っています。「手で動かす準備」の `docker compose down` と `docker compose up -d db` を打ってください。
+- **`git push` やプルリクエストでうまくいかない**：レッスン2-4と2-5の「困ったとき」を見てください。
+
 ## 確かめよう
 
-次の4つがそろえば、この教材の総仕上げは完了です。
+次の5つがそろえば、この教材の総仕上げは完了です。
 
 1. GitHub の `business-app` の `main` に、更新の機能が合流している
 2. プルリクエストに、「何を変えたか」「なぜ」「どう確かめたか」「見てほしい点」が書かれている
 3. `docker compose up -d --build` で動かしたアプリ（`http://localhost:3000/employees`）で、社員を登録し、直せる
 4. `npm run typecheck`、`npx vitest run`、`dotnet test api1.Tests` がすべて通る
+5. GitHub の `business-app` に `.env` がなく、`compose.yaml` と `api1/appsettings.json` にパスワード（`secret`）が書かれていない
 
 ## ここまで来たら
 
@@ -266,5 +369,5 @@ docker compose up -d --build
 
 ## 今は知らなくてよいこと
 
-- プルリクエストを出したときに、テストを自動で動かす仕組み（CI）
+- プルリクエストを出したときに、テストを自動で動かす仕組み（CI）。[さらに学ぶ](../../next-steps/)で資料を紹介しています
 - アプリを本番のサーバーに置く方法

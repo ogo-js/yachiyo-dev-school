@@ -17,8 +17,11 @@ description: この教材を終えた後に読むとよい、公式のチュー�
 | --- | --- | --- |
 | [Pro Git](https://git-scm.com/book/ja/v2) | Git の仕組みを、基本から細かいところまで説明した本。Web で全文を読める | 日本語 |
 | [GitHub Docs](https://docs.github.com/ja) | GitHub の公式の説明。プルリクエストのレビューや、Actions の使い方など | 日本語 |
+| [GitHub Actions のクイックスタート](https://docs.github.com/ja/actions/get-started/quickstart) | プッシュやプルリクエストのたびに、テストなどを自動で動かす仕組み（CI）の入門 | 日本語 |
 
 この教材の「今は知らなくてよいこと」で後回しにした、コミットの取り消しや `rebase` は Pro Git の「Git の基本」と「Git のブランチ機能」の章にあります。
+
+レッスン10-2の「今は知らなくてよいこと」に挙げた CI は、GitHub Actions で作れます。クイックスタートを読んだら、[.NET でのビルドとテスト](https://docs.github.com/ja/actions/tutorials/build-and-test-code/net)と[Node.js のビルドとテスト](https://docs.github.com/ja/actions/tutorials/build-and-test-code/nodejs)を見ながら、`business-app` の `dotnet test` と `npx vitest run` をプルリクエストのたびに動かすようにしてみてください。
 
 ## Web の仕組み（第3部の続き）
 
@@ -64,6 +67,10 @@ React Router のチュートリアルは、第7部で作った社員の一覧と
 | [C# のドキュメント](https://learn.microsoft.com/ja-jp/dotnet/csharp/) | C# の公式の説明。言語の機能を1つずつ調べられる | 日本語 |
 | [ASP.NET Core で Web API を作るチュートリアル](https://learn.microsoft.com/ja-jp/aspnet/core/tutorials/first-web-api) | Web API を作る公式のチュートリアル | 日本語 |
 | [Npgsql のドキュメント](https://www.npgsql.org/doc/) | 第8部で使った、C# から PostgreSQL につなぐ部品の説明 | 英語 |
+| [ASP.NET Core 認証の概要](https://learn.microsoft.com/ja-jp/aspnet/core/security/authentication/) | ログインの仕組み（認証）の公式の説明。業務アプリにはほぼ必ず要る | 日本語 |
+| [開発中のアプリ シークレットの安全な保存](https://learn.microsoft.com/ja-jp/aspnet/core/security/app-secrets) | レッスン10-2で使ったユーザーシークレットの公式の説明 | 日本語 |
+
+ログインはレッスン3-4の Cookie の話の続きです。どのやり方を選ぶかは会社で決められていることが多いので、まず職場で使っている方法を確かめてから読んでください。
 
 ## テスト（第9部の続き）
 

@@ -133,9 +133,11 @@ public class EmployeesController(NpgsqlDataSource dataSource) : ControllerBase
         """;
 
     [HttpGet]
-    public async Task<List<Employee>> GetAll()
+    public async Task<List<Employee>> GetAll(string? name)
     {
-        await using var command = dataSource.CreateCommand(SelectEmployees + " ORDER BY e.id");
+        await using var command = dataSource.CreateCommand(
+            SelectEmployees + " WHERE e.name LIKE @pattern ORDER BY e.id");
+        command.Parameters.AddWithValue("pattern", $"%{name}%");
         await using var reader = await command.ExecuteReaderAsync();
 
         var employees = new List<Employee>();
@@ -205,6 +207,8 @@ public class EmployeesController(NpgsqlDataSource dataSource) : ControllerBase
 - 社員の型に `DepartmentName`（部署の名前）を足した
 - 一覧と1人分で同じ `SELECT` を使うので、`SelectEmployees` という定数にまとめた
 - 1人分を探す処理を `FindAsync` にまとめ、`GetOne` と `Create` の両方から使うようにした。登録した後も、部署の名前の付いた社員を返せる
+- 一覧の `GetAll(string? name)`：`/api/employees?name=藤` のように、クエリ文字列の `name` を受け取る。`?name=` が付いていないときは `null` になる
+- `LIKE @pattern`：名前に `name` を含む社員だけを返す（レッスン5-1の `LIKE`）。前後に `%` を付けた値もパラメーターで渡す（レッスン8-3）。`name` が `null` のときは `%%` になり、全員を返す
 
 ### 部署の一覧を返す
 
@@ -250,9 +254,12 @@ dotnet run --urls http://localhost:5080
 ```bash
 curl http://localhost:5080/api/employees/6
 curl http://localhost:5080/api/departments
+curl -G --data-urlencode "name=藤" http://localhost:5080/api/employees
 ```
 
-渡辺さんの `"departmentName":null` と、3つの部署が返れば、API はできています。API は動かしたままにしておきます。
+3つ目の `-G --data-urlencode "name=藤"` は、`?name=藤` を URL に付けて GET で送る指定です。「藤」のような日本語は URL にそのまま書けないので、`%E8%97%A4` のような形に直して付けてくれます（レッスン3-2のサーバーのログと同じ形）。
+
+渡辺さんの `"departmentName":null` と、3つの部署と、佐藤さん・伊藤さんの2人が返れば、API はできています。API は動かしたままにしておきます。
 
 ## 画面を API につなぐ
 
@@ -292,8 +299,8 @@ export type NewEmployee = {
   salary: number;
 };
 
-export async function getEmployees(): Promise<Employee[]> {
-  const response = await fetch(`${API_URL}/api/employees`);
+export async function getEmployees(name: string): Promise<Employee[]> {
+  const response = await fetch(`${API_URL}/api/employees?name=${encodeURIComponent(name)}`);
   if (!response.ok) {
     throw new Error(`社員の一覧を取れませんでした（${response.status}）`);
   }
@@ -334,23 +341,33 @@ export async function addEmployee(input: NewEmployee): Promise<Employee> {
 
 - `process.env.API_URL ?? "http://localhost:5080"`：API の URL を、「環境変数」の `API_URL` から読む。決められていなければ、手元で動かしている API の URL を使う。環境変数はプログラムの外から設定を渡す仕組みで、後で Docker で動かすときに使う
 - `response.ok`：ステータスコードが200番台なら `true`。うまくいかなかったときは、エラーを投げて止める
+- `encodeURIComponent(name)`：検索の文字を URL に載せられる形（`%E8%97%A4` など）に直す。curl の `--data-urlencode` と同じ働き
 - 型の名前は、API が返す JSON の形（8-3）と合わせている。API の `departmentName` が `null` のこともあるので、`string | null` にしている
 
 `.server` を付けた名前にしているので、このファイルはブラウザに送られません（レッスン7-4）。API の URL のような情報を、ブラウザに見せずに済みます。
 
 ### 一覧と、詳しく見るページ
 
-`app/routes/employees.tsx` は、`import` の1行と、`EmployeeCard` に渡す部署を直します。
+`app/routes/employees.tsx` は `import` の1行と、`loader` と、`EmployeeCard` に渡す部署を直します。
 
 ```tsx
 import { getEmployees } from "../data/api.server";
 ```
 
 ```tsx
+export async function loader({ request }: Route.LoaderArgs) {
+  const url = new URL(request.url);
+  const q = url.searchParams.get("q") ?? "";
+  const employees = await getEmployees(q);
+  return { employees, q };
+}
+```
+
+```tsx
 <EmployeeCard name={employee.name} department={employee.departmentName ?? "（部署なし）"} />
 ```
 
-`loader` の中の `console.log` の行はもう要らないので消してかまいません。
+7-4では全員を取ってから `filter` で絞っていました。今度は検索の文字を API に渡し、データベースで絞った結果だけを受け取ります。社員が増えても、要る人の分だけが届きます。
 
 `app/routes/employee.tsx` も、`import` の1行を `api.server` に変え、部署と給料を表示します。
 
@@ -469,6 +486,7 @@ npm run dev
 ブラウザで `http://localhost:5173/employees` を開き、次のことを確かめます。
 
 - 第5部のデータの社員が並び、渡辺さんは「（部署なし）」と表示される
+- 検索欄に「藤」と入れて「探す」を押すと、URL が `/employees?q=藤` になり、佐藤さんと伊藤さんだけが表示される
 - 「詳しく見る」で、部署と給料が表示される
 - 登録のページで、部署の選択肢が3つ出る。登録すると一覧に増える
 - 画面と API を止めて動かし直しても、登録した社員が残っている
@@ -574,6 +592,7 @@ docker compose ps
 - **`npm run typecheck` で「Cannot find module '../data/employees.server'」と出た**：消したファイルをまだ読み込んでいるファイルがあります。表示されたファイルの `import` を `../data/api.server` に直すか、使っていないファイルなら消してください。
 - **画面に「社員の一覧を取れませんでした」や、接続のエラーが出た**：API が動いているか確かめてください。手で動かしているときは `dotnet run`、Docker のときは `docker compose ps` で `api` が動いているかを見ます。
 - **Docker で動かすと API が「Failed to connect to 127.0.0.1:5432」のように出る**：接続文字列が `localhost` のままです。`compose.yaml` の `ConnectionStrings__Default` の `Host=db` を確かめてください。
+- **curl で `?name=藤` のように日本語を直接書くと、`400` が返る**：URL には日本語をそのまま書けません。`curl -G --data-urlencode "name=藤" …` のように送ってください。
 - **`docker compose logs api` や `docker compose logs web` でエラーを見たい**：サービスの名前を付けてログを見ると、どのコンテナで何が起きたかが分かります。
 - **データベースに練習用のデータが入らない**：`sample.sql` は、データベースを初めて作るときにだけ流し込まれます。入れ直すときは、`docker compose down -v` でボリュームごと消してから動かします（データはすべて消えます）。
 
@@ -589,6 +608,7 @@ docker compose ps
 ## 今は知らなくてよいこと
 
 - 本番のサーバーに置くための設定（HTTPS、パスワードの渡し方など）
+- 検索の文字に入った `%` や `_` を、ただの文字として扱う方法。今は「何文字でもよい」「どれか1文字」の印として働くので、`_` で探すと全員が返る
 - 画面のテストを Docker の中で動かす方法
 
 ## 次のレッスン
