@@ -215,7 +215,8 @@ Fast-forward
 ## 困ったとき
 
 - **「Permission denied (publickey)」と出た**：公開鍵が GitHub に登録されていないか、登録した鍵と手元の鍵が組になっていません。「公開鍵を GitHub に登録する」をやり直してください。
-- **`git push` で「rejected」「fetch first」と出た**：GitHub の方に、手元にない記録があります。先に `git pull` で取り込んでから、もう一度 `git push` してください。
+- **`git push` で「rejected」「fetch first」と出た**：GitHub の方に、手元にない記録があります。先に `git pull` で取り込んでから、もう一度 `git push` してください。手元と GitHub の両方に新しい記録があるときは、`git pull` が2つを合流させる記録を作ります。そのとき VS Code に `MERGE_MSG` というタブが開き、ターミナルには「Waiting for your editor to close the file...」と出て、そのまま止まります。書いてある内容はそのままでよいので、タブを閉じてください。閉じると `git pull` が終わります。
+- **`git pull` で「Need to specify how to reconcile divergent branches」と出た**：レッスン2-1の「最初の設定」の5つ目（`pull.rebase`）が抜けています。`git config --global pull.rebase false` を打ってから、もう一度 `git pull` してください。
 - **`git pull` でコンフリクトが起きた**：レッスン2-3と同じ方法で直して、コミットしてから `git push` してください。
 
 ## 確かめよう

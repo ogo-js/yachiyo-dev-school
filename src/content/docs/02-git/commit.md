@@ -46,18 +46,19 @@ sudo apt install git
 
 ## 最初の設定
 
-Git の記録には、記録した人の名前とメールアドレスが入ります。最初に1回だけ、次の4つを設定します。
+Git の記録には、記録した人の名前とメールアドレスが入ります。最初に1回だけ、次の5つを設定します。
 
 ```bash
 git config --global user.name "Yachiyo"
 git config --global user.email "yachiyo@example.com"
 git config --global init.defaultBranch main
 git config --global core.editor "code --wait"
+git config --global pull.rebase false
 ```
 
 1行目と2行目は、自分の名前とメールアドレスに置き換えてください。名前は英字で書くのがおすすめです。
 
-3行目と4行目は、この教材の画面の表示とそろえるための設定です。今は意味が分からなくてかまいません。
+3行目から5行目はこの教材の画面の表示や動きとそろえるための設定です。今は意味が分からなくてかまいません。
 
 設定できたかは次のように確かめられます。
 
@@ -70,6 +71,7 @@ user.name=Yachiyo
 user.email=yachiyo@example.com
 init.defaultbranch=main
 core.editor=code --wait
+pull.rebase=false
 ```
 
 ## 記録を始める：git init
