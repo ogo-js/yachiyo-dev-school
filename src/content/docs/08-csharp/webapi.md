@@ -82,20 +82,14 @@ public class EmployeesController : ControllerBase
 
 `[ ]` で囲んだ部分は「属性」と呼び、クラスやメソッドに「これはどんな役割か」の印を付けています。
 
-## 日本語をそのまま返す設定
+## Program.cs を短くする
 
-`Program.cs` を、次のように書き換えて保存します。
+ひな形の `Program.cs` には HTTPS（暗号化した通信）に移す設定と、ログインした人かを確かめる設定が入っています。どちらもこの教材では使いません。この2つを外して、`Program.cs` を次のように書き換えて保存します。
 
 ```csharp
-using System.Text.Encodings.Web;
-using System.Text.Unicode;
-
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers().AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
-});
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
@@ -104,7 +98,9 @@ app.MapControllers();
 app.Run();
 ```
 
-ASP.NET Core は何も設定しないと、JSON の中の日本語を `\u4F50\u85E4` のような記号の並びに置き換えて返します。プログラムからは正しく読めますが、curl で見たときに読めないので、日本語のまま返すように設定しています。
+- `builder.Services.AddControllers()`：コントローラーを使えるようにする
+- `app.MapControllers()`：届いたリクエストを URL の合うコントローラーに渡す
+- `app.Run()`：API を動かして、リクエストを待つ
 
 ## 動かして呼ぶ
 

@@ -79,6 +79,18 @@ git push -u origin main
 
 `PUT` は、レッスン3-2の「今は知らなくてよいこと」で出てきたメソッドの1つで、「この内容で置き換えて」というお願いです。
 
+## 手で動かす準備
+
+作っているあいだは、API と画面を手で動かして確かめます。レッスン10-1の「確かめよう」を終えたままだと、Docker の API が5080番のポートを使っています。そのため、API を手で動かそうとすると「address already in use」と出て動きません。Docker で動いている3つをいったん止めて、データベースだけを動かしておきます。
+
+```bash
+cd ~/practice/business-app
+docker compose down
+docker compose up -d db
+```
+
+データはボリュームに残っているので、10-1で登録した社員も消えません。
+
 ## 1. ブランチを作る
 
 ```bash
@@ -229,7 +241,7 @@ git pull
 git branch -d edit-employee
 ```
 
-最後に、Docker でまとめて動かして、更新ができることを確かめます。
+最後に、手で動かしている API と画面を Ctrl+C で止めます。そのあと Docker でまとめて動かして、更新ができることを確かめます。
 
 ```bash
 docker compose up -d --build

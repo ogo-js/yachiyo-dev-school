@@ -77,17 +77,17 @@ dotnet run
 
 ## 型の間違いは動かす前に見つかる
 
-`count` に文字列を入れてみます。1行目を次のように書き換えて保存し、`dotnet run` を打ちます。
+`count` に文字列を入れてみます。2行目の `int count = 1;` を次のように書き換えて保存し、`dotnet run` を打ちます。
 
 ```csharp
 int count = "abc";
 ```
 
 ```text
-Program.cs(1,13): error CS0029: Cannot implicitly convert type 'string' to 'int'
+Program.cs(2,13): error CS0029: Cannot implicitly convert type 'string' to 'int'
 ```
 
-動く前に止まりました。表示の形は TypeScript の `tsc` のエラーとよく似ています（`(1,13)` は1行目の13文字目）。C# では、型の確かめがプログラムを作る（ビルドする）手順の中に必ず入っています。確かめたら、元に戻しておいてください。
+動く前に止まりました。表示の形は TypeScript の `tsc` のエラーとよく似ています（`(2,13)` は2行目の13文字目）。C# では、型の確かめがプログラムを作る（ビルドする）手順の中に必ず入っています。確かめたら、元に戻しておいてください。
 
 ## お金の計算は decimal
 

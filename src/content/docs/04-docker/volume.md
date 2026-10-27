@@ -32,6 +32,15 @@ cd ~/practice/compose1
 docker compose up -d
 ```
 
+`docker compose up -d` はコンテナを動かし始めたところで終わります。中のデータベースが使えるようになるのは、その数秒後です。数秒待ってから、次へ進んでください。
+
+:::note
+データベースの準備が終わる前に操作すると、次のどちらかが出ます。数秒待ってから、打ち直してください。
+
+- `FATAL:  the database system is starting up`
+- `connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: No such file or directory`
+:::
+
 `db` のコンテナの中で、PostgreSQL を操作するコマンド（`psql`）を動かして、表を1つ作ります。
 
 ```bash
@@ -70,7 +79,7 @@ docker compose down
 docker compose up -d
 ```
 
-もう一度、中身を見ます。
+数秒待ってから、もう一度、中身を見ます。
 
 ```bash
 docker compose exec db psql -U app -d practice -c "SELECT * FROM memo;"
@@ -83,10 +92,6 @@ LINE 1: SELECT * FROM memo;
 ```
 
 「`memo` という表がない」と言われました。表もデータも消したコンテナと一緒に消えています。
-
-:::note
-動かしてすぐは、データベースの準備が終わっていないことがあります。「could not connect to server」のように出たら、数秒待ってから打ち直してください。
-:::
 
 ## ボリュームを使う
 
@@ -120,11 +125,16 @@ volumes:
 
 ## データが残ることを確かめる
 
-書き換えた設定で動かし直し、もう一度、表を作って1行入れます。
+書き換えた設定で動かし直します。
 
 ```bash
 docker compose down
 docker compose up -d
+```
+
+数秒待ってから、もう一度、表を作って1行入れます。
+
+```bash
 docker compose exec db psql -U app -d practice -c "CREATE TABLE memo (body text);"
 docker compose exec db psql -U app -d practice -c "INSERT INTO memo VALUES ('こんにちは');"
 ```
@@ -134,6 +144,11 @@ docker compose exec db psql -U app -d practice -c "INSERT INTO memo VALUES ('こ
 ```bash
 docker compose down
 docker compose up -d
+```
+
+数秒待ってから、中身を見ます。
+
+```bash
 docker compose exec db psql -U app -d practice -c "SELECT * FROM memo;"
 ```
 
@@ -173,9 +188,9 @@ docker compose down -v
 
 ## 確かめよう
 
-1. `docker compose up -d` で動かし、`memo` の表に「さようなら」の行を足す
+1. `docker compose up -d` で動かし、数秒待ってから `memo` の表に「さようなら」の行を足す
 2. `docker compose down` で止めて消し、`docker compose up -d` で作り直す
-3. `memo` の表の中身を見る
+3. 数秒待ってから、`memo` の表の中身を見る
 
 3で「こんにちは」と「さようなら」の2行が出れば完了です。確かめたら、`docker compose down` で止めておきます。データは次の部で使うので、`-v` は付けないでください。
 

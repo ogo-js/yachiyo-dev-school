@@ -88,10 +88,17 @@ volumes:
 ```bash
 cd ~/practice/business-app
 docker compose up -d db
+```
+
+`docker compose up -d db` のように、サービスの名前を付けると、そのサービスだけを動かせます。
+
+初めて動かすときは、`sample.sql` を流し込むので、データベースの準備にいつもより少し時間がかかります。10秒ほど待ってから、データが入ったかを確かめます。
+
+```bash
 docker compose exec db psql -U app -d practice -c "SELECT count(*) FROM employees;"
 ```
 
-`6` と出れば、練習用のデータが入っています。`docker compose up -d db` のように、サービスの名前を付けると、そのサービスだけを動かせます。
+`6` と出れば、練習用のデータが入っています。「the database system is starting up」などと出たときは、準備がまだ終わっていません（レッスン4-3）。数秒待ってから打ち直してください。
 
 ## API を直す
 
@@ -433,6 +440,22 @@ export default function EmployeeNew({ loaderData, actionData }: Route.ComponentP
 - 入力の確かめは9-3で作った `validateEmployee` をそのまま使い、給料の確かめだけを足している
 - `EmployeeErrors & { salary?: string }`：「`EmployeeErrors` の項目に、`salary` も足した型」という意味
 
+### 部署ごとの一覧のページを外す
+
+レッスン7-4の「確かめよう」で作った部署ごとの一覧のページ（`departments/:name`）は、さっき消した `employees.server` を使っています。このアプリでは使わないので、外します。
+
+`app/routes.ts` から、次のような `departments/:name` の行を消します。ファイルの名前は7-4で自分で付けたものになっています。
+
+```ts
+  route("departments/:name", "routes/department.tsx"),
+```
+
+その行に書いてあるページのファイルも消します。`department.tsx` という名前なら、次のように打ちます。
+
+```bash
+rm app/routes/department.tsx
+```
+
 ### つないで確かめる
 
 型の検査とテストが通ることを確かめてから、画面を動かします。
@@ -548,6 +571,7 @@ docker compose ps
 
 ## 困ったとき
 
+- **`npm run typecheck` で「Cannot find module '../data/employees.server'」と出た**：消したファイルをまだ読み込んでいるファイルがあります。表示されたファイルの `import` を `../data/api.server` に直すか、使っていないファイルなら消してください。
 - **画面に「社員の一覧を取れませんでした」や、接続のエラーが出た**：API が動いているか確かめてください。手で動かしているときは `dotnet run`、Docker のときは `docker compose ps` で `api` が動いているかを見ます。
 - **Docker で動かすと API が「Failed to connect to 127.0.0.1:5432」のように出る**：接続文字列が `localhost` のままです。`compose.yaml` の `ConnectionStrings__Default` の `Host=db` を確かめてください。
 - **`docker compose logs api` や `docker compose logs web` でエラーを見たい**：サービスの名前を付けてログを見ると、どのコンテナで何が起きたかが分かります。

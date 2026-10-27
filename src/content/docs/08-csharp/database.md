@@ -93,16 +93,11 @@ dotnet add package Npgsql
 `Program.cs` を、次のように書き換えて保存します。増えたのは、`using Npgsql;` と、`connectionString` から始まる2行です。
 
 ```csharp
-using System.Text.Encodings.Web;
-using System.Text.Unicode;
 using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers().AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
-});
+builder.Services.AddControllers();
 
 var connectionString = builder.Configuration.GetConnectionString("Default");
 builder.Services.AddSingleton(NpgsqlDataSource.Create(connectionString!));
