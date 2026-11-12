@@ -35,6 +35,7 @@ export default defineConfig({
 				{ label: '第8部 C# と ASP.NET Core', items: [{ autogenerate: { directory: '08-csharp' } }] },
 				{ label: '第9部 テスト', items: [{ autogenerate: { directory: '09-test' } }] },
 				{ label: '第10部 総仕上げ', items: [{ autogenerate: { directory: '10-final' } }] },
+				{ label: '付録 Web Forms から来た人へ', link: '/from-webforms/' },
 				{ label: '付録 Claude Code', items: [{ autogenerate: { directory: 'appendix-claude' } }] },
 				{ label: 'さらに学ぶ', link: '/next-steps/' },
 			],
